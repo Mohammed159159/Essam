@@ -6,7 +6,7 @@
 #define SERVO2 16
 
 /* MOTOR PINS */
-#define IN1 12
+#define IN1 11
 #define IN2 14
 #define ENA 13
 #define IN3 26
