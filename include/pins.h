@@ -1,26 +1,19 @@
 #ifndef PINS_H
 #define PINS_H
 
-/* SERVO PINS */
-#define SERVO1 17
-#define SERVO2 16
+/* MOTORS */
+#define RIGHT_MOTOR_SPEED 11
+#define RIGHT_MOTOR_FORWARD 9
+#define RIGHT_MOTOR_BACKWARD 10
+#define LEFT_MOTOR_SPEED 6
+#define LEFT_MOTOR_FORWARD 8
+#define LEFT_MOTOR_BACKWARD 7
 
-/* MOTOR PINS */
-#define IN1 12
-#define IN2 14
-#define ENA 13
-#define IN3 26
-#define IN4 25
-#define ENB 27
-#define MOTOR_PINS_NUM 9
-
-/* SHOOTER PINS */
-#define IN5 19
-#define ENC 18
-
-/* LINE FOLLOWER PINS */
-#define S1 25
-#define S2 26
-#define S3 27
+/* LINE FOLLOWER */
+#define RR A4
+#define R A3
+#define C A2
+#define L A1
+#define LL A0
 
 #endif

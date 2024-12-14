@@ -1,52 +1,82 @@
 #include "line_follower.h"
-#include "bt_serial.h"
-#include "commands.h"
 
-void LineFollower::useLineFollower(char cmd)
+void LineFollower::get_readings()
 {
-    switch (cmd)
-    {
-    case DEBUG_READINGS:
-        debugReadings();
-        break;
-    case FOLLOW_LINE:
-        while (1)
-        {
-            if ((analogRead(S1) < THRESHOLD && analogRead(S2) < THRESHOLD) || (analogRead(S1) > THRESHOLD && analogRead(S2) > THRESHOLD))
-               motors.isReversed ? motors.backward() : motors.forward();
-            else if (analogRead(S1) < THRESHOLD && analogRead(S2) > THRESHOLD)
-                motors.spinRight();
-            else if (analogRead(S2) < THRESHOLD && analogRead(S1) > THRESHOLD)
-                motors.spinLeft();
-            else
-                motors.freeze();
-
-            if (BTSerial.available())
-            {
-                cmd = BTSerial.read();
-                if (cmd == STOP_LINE_FOLLOWING)
-                {
-                    motors.freeze();
-                    break;
-                }
-                else if (cmd == CHANGE_MAX_SPEED)
-                    motors.changeMaxSpeed();
-            }
-        }
-    }
+    read_left = digitalRead(L);
+    read_center = digitalRead(C);
+    read_right = digitalRead(R);
+    read_far_left = !digitalRead(LL);
+    read_far_right = !digitalRead(RR);
 }
 
-void LineFollower::debugReadings()
+void LineFollower::debug_readings()
 {
-    for (int i = 0; i < SENSORS_NUM; i++)
+    get_readings();
+    Serial.print("LINE_FOLLOWING_MODE: ");
+    Serial.println(isOn);
+    Serial.print("far left: ");
+    Serial.print(read_far_left);
+    Serial.print(" ");
+    Serial.print("left: ");
+    Serial.print(read_left);
+    Serial.print(" ");
+    Serial.print("center: ");
+    Serial.print(read_center);
+    Serial.print(" ");
+    Serial.print("right: ");
+    Serial.print(read_right);
+    Serial.print(" ");
+    Serial.print("far right: ");
+    Serial.println(read_far_right);
+    Serial.println(solve());
+    delay(2000);
+}
+
+char LineFollower::solve()
+{
+    get_readings();
+
+    if (read_far_left == 0 && read_center == 0 && read_far_right == 0)
     {
-        sensorReadings[i] = analogRead(sensorPins[i]);
-        BTSerial.print("S");
-        BTSerial.print(i + 1);
-        BTSerial.print(": ");
-        BTSerial.print(sensorReadings[i]);
-        BTSerial.print(" ");
-        if (i == SENSORS_NUM - 1)
-            BTSerial.println("");
+        return stop;
     }
+    else if (read_far_left == 0 && !ignore_left)
+    {
+        ignore_right = true;
+        return spin_left;
+    }
+    else if (read_left == 0 && !ignore_left)
+    {
+        ignore_left = false;
+        ignore_right = false;
+
+        return left;
+    }
+    else if (read_center == 0)
+    {
+        ignore_left = false;
+        ignore_right = false;
+        
+        return forward;
+    }
+    else if (read_right == 0 && !ignore_right)
+    {
+        ignore_left = false;
+        ignore_right = false;
+
+        return right;
+    }
+    else if (read_far_right == 0 && !ignore_right)
+    {
+        ignore_left = true;
+        return spin_right;
+    }
+    return '\0';
+}
+
+
+void LineFollower::toggle_on_off(char cmd)
+{
+    if (cmd == TOGGLE_LINE_FOLLOWING_MODE)
+        isOn = !isOn;
 }

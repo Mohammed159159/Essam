@@ -1,27 +1,40 @@
-#include "Arduino.h"
+#ifndef LINE_FOLLOWER_H
+#define LINE_FOLLOWER_H
+#include <Arduino.h>
 #include "pins.h"
-#include "motors.h"
-
-#define THRESHOLD 500
-#define SENSORS_NUM 3
-
+#include "commands.h"
 
 class LineFollower
 {
 private:
-    int sensorPins[SENSORS_NUM] = {S1, S2, S3};
-    int sensorReadings[SENSORS_NUM];
-    void debugReadings();
-    Motors motors;
-    char cmd = '\0';
+    void get_readings();
+    int read_left;
+    int read_center;
+    int read_right;
+    int read_far_left;
+    int read_far_right;
+    bool ignore_right = false;
+    bool ignore_left = false;
+    const char spin_left = SPIN_LEFT;
+    const char left = LEFT;
+    const char forward = FORWARD;
+    const char right = RIGHT;
+    const char spin_right = SPIN_RIGHT;
+    const char stop = STOP;
 
 public:
-    LineFollower(Motors motors)
+    LineFollower()
     {
-        this->motors = motors;
-
-        for (int i = 0; i < SENSORS_NUM; i++)
-            pinMode(sensorPins[i], INPUT);
+        pinMode(LL, INPUT);
+        pinMode(L, INPUT);
+        pinMode(C, INPUT);
+        pinMode(R, INPUT);
+        pinMode(RR, INPUT);
     }
-    void useLineFollower(char cmd);
+    void debug_readings();
+    char solve();
+    bool isOn = false;
+    void toggle_on_off(char cmd);
 };
+
+#endif
